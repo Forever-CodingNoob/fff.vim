@@ -14,7 +14,6 @@ function! fff#open_file(...)
     let tmp_file .= "/fff/opened_file"
     let tmp_file = fnameescape(tmp_file)
     bd!
-    execute s:winnr . 'wincmd w'
 
     if filereadable(tmp_file)
         let file_data = readfile(tmp_file)
@@ -23,18 +22,19 @@ function! fff#open_file(...)
         return
     endif
 
-    if filereadable(file_data[0])
-        execute "e " . file_data[0]
+    if win_gotoid(s:target_winid) && filereadable(file_data[0])
+        execute "e " . fnameescape(file_data[0])
     endif
 endfunction
 
 function! fff#Run(command)
+    let s:target_winid = win_getid()
+
     execute 'setlocal' . ' ' . g:fff#split_direction
     execute g:fff#split
     execute 'setlocal nonumber'
     execute 'setlocal norelativenumber'
 
-    let s:winnr = winnr()
     if has('nvim')
         call termopen('fff -p ' . a:command,
                     \ {'on_exit': function('fff#open_file') })
